@@ -184,6 +184,7 @@ canvas.drag{cursor:grabbing}
     
     
     <button id="fit" title="Root person origins summary">Summary</button>
+    <button id="treeBtn" title="Fit whole tree">Tree</button>
     <button id="home" title="Go to root person">Melissa</button>
     <button id="shared" title="Highlight ancestors shared between the Endicott and Giles lines" aria-pressed="false">Shared</button>
   </div>
@@ -704,7 +705,7 @@ window.addEventListener('resize',resize);
 const sumEl=document.getElementById('summaryPanel');
 const SUMMARY_BODY=`<div class="obar"><div class="olab"><span class="oname">English</span><span class="opct">50%</span></div><div class="otrack"><span class="ofill" style="width:50%;background:#9c7b3f"></span></div><div class="onote">Her maternal Endicott line — 17th-century New England Puritan colonist stock, an Anglo-Saxon base under a post-1066 Norman overlay that runs back on paper to medieval kings, Kievan princes, and Byzantine emperors. But that royal pedigree is more decorative than genetic: population-genetics models show nearly everyone of European descent descends from the 8th century emperor Charlemagne — a phenomenon called “pedigree collapse.”</div></div><div class="obar"><div class="olab"><span class="oname">Québécois / French</span><span class="opct">25%</span></div><div class="otrack"><span class="ofill" style="width:25%;background:#45658f"></span></div><div class="onote">The paternal Roy line — French by origin, but recorded no further back than Québec.</div></div><div class="obar"><div class="olab"><span class="oname">Irish</span><span class="opct">12.5–25%</span></div><div class="otrack"><span class="ofill" style="width:12.5%;background:#4a7a52"></span><span class="ofill ohatch" style="width:12.5%"></span></div><div class="onote">The paternal Mullins line, pre-1839 immigrants — a firm eighth that reaches a full quarter if the adjoining Boyle line was Irish too.</div></div>`;
 function showSummary(){var pn=document.getElementById('panel');if(pn)pn.style.display='none';sumEl.innerHTML='<button class="x" aria-label="Close">×</button><div class="hd"><div class="nm">'+esc(P[ROOT][0])+'</div></div><div class="bd">'+SUMMARY_BODY+'</div>';sumEl.style.display='block';sumEl.querySelector('.x').onclick=function(){sumEl.style.display='none';};}
-document.getElementById('fit').onclick=function(){fitAll();showSummary();};
+document.getElementById('fit').onclick=function(){showSummary();};document.getElementById('treeBtn').onclick=function(){var _se=document.getElementById('summaryPanel');if(_se)_se.style.display='none';fitAll();};
 resize(); fitAll(); showSummary();
 @@CLOSESCRIPT@@
 </body>
@@ -855,6 +856,7 @@ canvas.drag{cursor:grabbing}
     
     
     <button id="fit" title="Root person origins summary">Summary</button>
+    <button id="treeBtn" title="Fit whole tree">Tree</button>
     <button id="home" title="Go to root person">Tom</button>
     <button id="shared" title="Highlight ancestors shared between the Endicott and Giles lines" aria-pressed="false">Shared</button>
   </div>
@@ -1375,7 +1377,7 @@ window.addEventListener('resize',resize);
 const sumEl=document.getElementById('summaryPanel');
 const SUMMARY_BODY=`<div class="obar"><div class="olab"><span class="oname">Irish</span><span class="opct">62.5%</span></div><div class="otrack"><span class="ofill" style="width:62.5%;background:#4a7a52"></span></div><div class="onote">His entire maternal half — recent immigrant stock (Cork and Fermanagh, later 1800s) — plus a further Sligo eighth on his father’s side.</div></div><div class="obar"><div class="olab"><span class="oname">English</span><span class="opct">25%</span></div><div class="otrack"><span class="ofill" style="width:25%;background:#9c7b3f"></span></div><div class="onote">A colonial New England quarter — the same Anglo-Saxon-and-Norman island stock, running back on paper to the same medieval kings, Kievan princes, and Byzantine emperors Melissa shares. But that royal pedigree is more decorative than genetic: population-genetics models show nearly everyone of European descent descends from the 8th century emperor Charlemagne — a phenomenon called “pedigree collapse.”</div></div><div class="obar"><div class="olab"><span class="oname">Scots</span><span class="opct">12.5%</span></div><div class="otrack"><span class="ofill" style="width:12.5%;background:#7a5a86"></span></div><div class="onote">The Campbells, by way of Prince Edward Island.</div></div>`;
 function showSummary(){var pn=document.getElementById('panel');if(pn)pn.style.display='none';sumEl.innerHTML='<button class="x" aria-label="Close">×</button><div class="hd"><div class="nm">'+esc(P[ROOT][0])+'</div></div><div class="bd">'+SUMMARY_BODY+'</div>';sumEl.style.display='block';sumEl.querySelector('.x').onclick=function(){sumEl.style.display='none';};}
-document.getElementById('fit').onclick=function(){fitAll();showSummary();};
+document.getElementById('fit').onclick=function(){showSummary();};document.getElementById('treeBtn').onclick=function(){var _se=document.getElementById('summaryPanel');if(_se)_se.style.display='none';fitAll();};
 resize(); fitAll(); showSummary();
 @@CLOSESCRIPT@@
 </body>
