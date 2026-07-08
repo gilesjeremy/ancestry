@@ -1691,6 +1691,15 @@ cv.addEventListener('pointerup',e=>{cv.classList.remove('drag');
 cv.addEventListener('pointerleave',()=>{tip.style.display='none';});
 cv.addEventListener('wheel',e=>{e.preventDefault();const f=Math.exp(-e.deltaY*0.0016);const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
   const nx=(mx-ox)/scale,ny=(my-oy)/scale;scale=Math.max(1,Math.min(100,scale*f));ox=mx-nx*scale;oy=my-ny*scale;clampView();draw();},{passive:false});
+let pinch=null;
+cv.addEventListener('touchstart',e=>{if(e.touches.length===2){const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
+cv.addEventListener('touchmove',e=>{if(pinch&&e.touches.length===2){e.preventDefault();const [a,b]=e.touches;
+  const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
+  const rect=cv.getBoundingClientRect();
+  const mx=(a.clientX+b.clientX)/2-rect.left,my=(a.clientY+b.clientY)/2-rect.top;
+  const nx=(mx-ox)/scale,ny=(my-oy)/scale;
+  scale=Math.max(1,Math.min(100,pinch.s*d/pinch.d));ox=mx-nx*scale;oy=my-ny*scale;clampView();draw();}},{passive:false});
+cv.addEventListener('touchend',()=>pinch=null);
 
 
 
