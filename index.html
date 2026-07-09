@@ -152,7 +152,7 @@ canvas.drag{cursor:grabbing}
 @media (max-width:680px){
   header{gap:8px;padding:8px 10px}
   header .sub{display:none}
-  #panel,#summaryPanel{width:calc(100% - 28px);max-height:calc(100% - 20px)}
+  #panel,#summaryPanel{width:min(330px,calc(100% - 154px));max-height:calc(100% - 20px)}
   #panel .nm,#summaryPanel .nm{font-size:15px}
   #panel .place,#summaryPanel .place{font-size:12px}
   #panel .note,#summaryPanel .note{font-size:12px}
@@ -324,9 +324,12 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout=ne
 let DPR=1, vw=0, vh=0;
 let scale=0.04, ox=0, oy=0;
 function resize(){
+  const oldVw=vw, oldVh=vh;
+  const wx=(oldVw&&scale)?(oldVw/2-ox)/scale:null, wy=(oldVh&&scale)?(oldVh/2-oy)/scale:null;
   DPR=Math.min(window.devicePixelRatio||1,2);
   vw=cv.clientWidth; vh=cv.clientHeight;
   cv.width=vw*DPR; cv.height=vh*DPR;
+  if(wx!==null&&wy!==null){ox=vw/2-wx*scale;oy=vh/2-wy*scale;}
   draw();
 }
 function fitAll(){
@@ -835,7 +838,7 @@ canvas.drag{cursor:grabbing}
 @media (max-width:680px){
   header{gap:8px;padding:8px 10px}
   header .sub{display:none}
-  #panel,#summaryPanel{width:calc(100% - 28px);max-height:calc(100% - 20px)}
+  #panel,#summaryPanel{width:min(330px,calc(100% - 154px));max-height:calc(100% - 20px)}
   #panel .nm,#summaryPanel .nm{font-size:15px}
   #panel .place,#summaryPanel .place{font-size:12px}
   #panel .note,#summaryPanel .note{font-size:12px}
@@ -1007,9 +1010,12 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{layout=ne
 let DPR=1, vw=0, vh=0;
 let scale=0.04, ox=0, oy=0;
 function resize(){
+  const oldVw=vw, oldVh=vh;
+  const wx=(oldVw&&scale)?(oldVw/2-ox)/scale:null, wy=(oldVh&&scale)?(oldVh/2-oy)/scale:null;
   DPR=Math.min(window.devicePixelRatio||1,2);
   vw=cv.clientWidth; vh=cv.clientHeight;
   cv.width=vw*DPR; cv.height=vh*DPR;
+  if(wx!==null&&wy!==null){ox=vw/2-wx*scale;oy=vh/2-wy*scale;}
   draw();
 }
 function fitAll(){
@@ -1450,7 +1456,7 @@ canvas.drag{cursor:grabbing}
 #ctrls button.treebtn:not(.on){color:#6f6a5e;border-style:dashed}
 #ctrls button.treebtn.on:hover{border-color:var(--gold);color:var(--gold)}
 
-#panel{position:absolute;top:14px;right:14px;width:300px;max-width:calc(100% - 28px);max-height:calc(100% - 120px);overflow:auto;
+#panel{position:absolute;top:96px;left:14px;width:300px;max-width:calc(100% - 28px);max-height:calc(100% - 110px);overflow:auto;
   background:var(--panel);color:var(--panel-ink);border-radius:5px;border:1px solid #cdc3ab;box-shadow:0 14px 40px rgba(0,0,0,.55);display:none}
 #panel .hd{padding:12px 15px 9px;border-bottom:2px solid #b3622d;position:relative}
 #panel .nm{font-size:17px;font-weight:700;font-style:italic}
@@ -1471,7 +1477,7 @@ canvas.drag{cursor:grabbing}
 #tip{position:absolute;pointer-events:none;background:rgba(26,32,41,.95);border:1px solid var(--hair);border-radius:4px;
   padding:5px 9px;font-size:12px;color:#efe9da;display:none;white-space:nowrap;z-index:5}
 #tip .c{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:var(--muted)}
-@media (max-width:680px){header .sub{display:none}#panel{width:calc(100% - 28px);max-height:calc(100% - 100px)}#panel .nm{font-size:14px}#panel .hd{padding:9px 12px 6px}#panel .bd{padding:5px 6px 8px}#panel .pr{padding:4px 6px}#panel .pr .nm2{font-size:12px}#panel .pr .y{font-size:10px;min-width:32px}#era{max-width:160px}}
+@media (max-width:680px){header .sub{display:none}#panel{width:min(300px,calc(100% - 154px));max-height:calc(100% - 110px)}#panel .nm{font-size:14px}#panel .hd{padding:9px 12px 6px}#panel .bd{padding:5px 6px 8px}#panel .pr{padding:4px 6px}#panel .pr .nm2{font-size:12px}#panel .pr .y{font-size:10px;min-width:32px}#era{max-width:190px}#era .row{white-space:normal;flex-wrap:wrap;align-items:baseline;line-height:1.3;column-gap:5px;row-gap:2px}#era .dot{align-self:center}}
 
 .grp{display:flex;flex-direction:column;gap:6px;margin-top:8px}.grp .lbl2{font:9px ui-monospace,Menlo,monospace;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 1px 1px}.cdiv{align-self:stretch;height:1px;background:var(--hair);opacity:.55;margin:1px 0}
 .trb-kia{background:#e7c9c4;color:#7a1f17;border:1px solid #c98e84}.trb-pow{background:#cdd7e6;color:#33507a;border:1px solid #93a7c8}
@@ -1539,7 +1545,7 @@ function sx(u){return ox+u*baseW*scale;}
 function sy(v){return oy+v*baseH*scale;}
 
 
-function resize(){DPR=Math.min(window.devicePixelRatio||1,2);vw=cv.clientWidth;vh=cv.clientHeight;cv.width=vw*DPR;cv.height=vh*DPR;computeBase();draw();}
+function resize(){const oldVw=vw,oldVh=vh,oldBaseW=baseW,oldBaseH=baseH;const u=(oldVw&&oldBaseW&&scale)?(oldVw/2-ox)/(oldBaseW*scale):null;const v=(oldVh&&oldBaseH&&scale)?(oldVh/2-oy)/(oldBaseH*scale):null;DPR=Math.min(window.devicePixelRatio||1,2);vw=cv.clientWidth;vh=cv.clientHeight;cv.width=vw*DPR;cv.height=vh*DPR;computeBase();if(u!==null&&v!==null){ox=vw/2-u*baseW*scale;oy=vh/2-v*baseH*scale;}draw();}
 function fit(){scale=1;ox=(vw-baseW)/2;oy=(vh-baseH)/2;draw();}function frameBox(lonW,latS,lonE,latN){var uMin=1,uMax=0,vMin=1,vMax=0,k,p;for(k=0;k<=12;k++){var la=latS+(latN-latS)*k/12,lo=lonW+(lonE-lonW)*k/12;[proj(lonW,la),proj(lonE,la),proj(lo,latS),proj(lo,latN)].forEach(function(q){uMin=Math.min(uMin,q[0]);uMax=Math.max(uMax,q[0]);vMin=Math.min(vMin,q[1]);vMax=Math.max(vMax,q[1]);});}var bw=(uMax-uMin)*baseW,bh=(vMax-vMin)*baseH;scale=Math.max(1,Math.min(100,Math.min(vw/bw,vh/bh)));ox=vw/2-((uMin+uMax)/2)*baseW*scale;oy=vh/2-((vMin+vMax)/2)*baseH*scale;clampView();draw();}
 function clampView(){const w=baseW*scale,h=baseH*scale;ox=(w<=vw)?(vw-w)/2:Math.min(0,Math.max(vw-w,ox));oy=(h<=vh)?(vh-h)/2:Math.min(0,Math.max(vh-h,oy));}
 
