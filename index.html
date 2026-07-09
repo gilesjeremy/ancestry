@@ -572,15 +572,17 @@ function draw(){
 
 // ---- interaction ----
 let drag=null;
-cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
+let multiTouch=false;
+cv.addEventListener('pointerdown',e=>{if(multiTouch)return;drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
 cv.addEventListener('pointermove',e=>{
-  if(!drag)return;
+  if(multiTouch||!drag)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
   if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
   ox=drag.ox+dx;oy=drag.oy+dy;draw();
 });
 cv.addEventListener('pointerup',e=>{
   cv.classList.remove('drag');
+  if(multiTouch){drag=null;return;}
   if(drag&&!drag.moved){
     const wx=(e.clientX-cv.getBoundingClientRect().left-ox)/scale;
     const wy=(e.clientY-cv.getBoundingClientRect().top-oy)/scale;
@@ -603,13 +605,14 @@ cv.addEventListener('wheel',e=>{
   ox=mx-wx*scale; oy=my-wy*scale; draw();
 },{passive:false});
 let pinch=null;
-cv.addEventListener('touchstart',e=>{if(e.touches.length===2){const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
+cv.addEventListener('touchstart',e=>{if(e.touches.length>=2){multiTouch=true;drag=null;const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
 cv.addEventListener('touchmove',e=>{if(pinch&&e.touches.length===2){e.preventDefault();const [a,b]=e.touches;
   const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
   const mx=(a.clientX+b.clientX)/2-cv.getBoundingClientRect().left,my=(a.clientY+b.clientY)/2-cv.getBoundingClientRect().top;
   const wx=(mx-ox)/scale,wy=(my-oy)/scale;
   scale=pinch.s*d/pinch.d;clampZ();ox=mx-wx*scale;oy=my-wy*scale;draw();}},{passive:false});
-cv.addEventListener('touchend',()=>pinch=null);
+cv.addEventListener('touchend',e=>{if(e.touches.length<2){multiTouch=false;pinch=null;}});
+cv.addEventListener('touchcancel',()=>{multiTouch=false;pinch=null;});
 
 
 
@@ -1244,15 +1247,17 @@ function draw(){
 
 // ---- interaction ----
 let drag=null;
-cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
+let multiTouch=false;
+cv.addEventListener('pointerdown',e=>{if(multiTouch)return;drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
 cv.addEventListener('pointermove',e=>{
-  if(!drag)return;
+  if(multiTouch||!drag)return;
   const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
   if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
   ox=drag.ox+dx;oy=drag.oy+dy;draw();
 });
 cv.addEventListener('pointerup',e=>{
   cv.classList.remove('drag');
+  if(multiTouch){drag=null;return;}
   if(drag&&!drag.moved){
     const wx=(e.clientX-cv.getBoundingClientRect().left-ox)/scale;
     const wy=(e.clientY-cv.getBoundingClientRect().top-oy)/scale;
@@ -1275,13 +1280,14 @@ cv.addEventListener('wheel',e=>{
   ox=mx-wx*scale; oy=my-wy*scale; draw();
 },{passive:false});
 let pinch=null;
-cv.addEventListener('touchstart',e=>{if(e.touches.length===2){const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
+cv.addEventListener('touchstart',e=>{if(e.touches.length>=2){multiTouch=true;drag=null;const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
 cv.addEventListener('touchmove',e=>{if(pinch&&e.touches.length===2){e.preventDefault();const [a,b]=e.touches;
   const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
   const mx=(a.clientX+b.clientX)/2-cv.getBoundingClientRect().left,my=(a.clientY+b.clientY)/2-cv.getBoundingClientRect().top;
   const wx=(mx-ox)/scale,wy=(my-oy)/scale;
   scale=pinch.s*d/pinch.d;clampZ();ox=mx-wx*scale;oy=my-wy*scale;draw();}},{passive:false});
-cv.addEventListener('touchend',()=>pinch=null);
+cv.addEventListener('touchend',e=>{if(e.touches.length<2){multiTouch=false;pinch=null;}});
+cv.addEventListener('touchcancel',()=>{multiTouch=false;pinch=null;});
 
 
 
@@ -1673,8 +1679,10 @@ function showBattlePanel(b){selBattle=b;sel=null;
   panel.querySelector('.x').onclick=()=>{selBattle=null;panel.style.display='none';draw();};draw();}
 const tip=document.getElementById('tip');
 let drag=null;
-cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
+let multiTouch=false;
+cv.addEventListener('pointerdown',e=>{if(multiTouch)return;drag={x:e.clientX,y:e.clientY,ox,oy,moved:false};cv.setPointerCapture(e.pointerId);cv.classList.add('drag');});
 cv.addEventListener('pointermove',e=>{
+  if(multiTouch)return;
   const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
   if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;ox=drag.ox+dx;oy=drag.oy+dy;clampView();draw();tip.style.display='none';return;}
   if(battlesOnly){const bb=battleAt(mx,my);if(bb){tip.style.display='block';tip.style.left=(mx+14)+'px';tip.style.top=(my+12)+'px';tip.innerHTML=`${esc(bb.name)}<br><span class="c">${bb.ppl.length} ${bb.ppl.length===1?'ancestor':'ancestors'} · click for names</span>`;cv.style.cursor='pointer';}else{tip.style.display='none';cv.style.cursor=drag?'grabbing':'grab';}return;}
@@ -1684,6 +1692,7 @@ cv.addEventListener('pointermove',e=>{
   else{tip.style.display='none';cv.style.cursor=drag?'grabbing':'grab';}
 });
 cv.addEventListener('pointerup',e=>{cv.classList.remove('drag');
+  if(multiTouch){drag=null;return;}
   if(drag&&!drag.moved){const rect=cv.getBoundingClientRect();const mx=e.clientX-rect.left,my=e.clientY-rect.top;
     if(battlesOnly){const bb=battleAt(mx,my);if(bb)showBattlePanel(bb);else{selBattle=null;panel.style.display='none';draw();}}
     else{const s=siteAt(mx,my);if(s)showPanel(s);else{sel=null;panel.style.display='none';draw();}}}
@@ -1692,14 +1701,15 @@ cv.addEventListener('pointerleave',()=>{tip.style.display='none';});
 cv.addEventListener('wheel',e=>{e.preventDefault();const f=Math.exp(-e.deltaY*0.0016);const rect=cv.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
   const nx=(mx-ox)/scale,ny=(my-oy)/scale;scale=Math.max(1,Math.min(100,scale*f));ox=mx-nx*scale;oy=my-ny*scale;clampView();draw();},{passive:false});
 let pinch=null;
-cv.addEventListener('touchstart',e=>{if(e.touches.length===2){const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
+cv.addEventListener('touchstart',e=>{if(e.touches.length>=2){multiTouch=true;drag=null;const [a,b]=e.touches;pinch={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY),s:scale};}});
 cv.addEventListener('touchmove',e=>{if(pinch&&e.touches.length===2){e.preventDefault();const [a,b]=e.touches;
   const d=Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
   const rect=cv.getBoundingClientRect();
   const mx=(a.clientX+b.clientX)/2-rect.left,my=(a.clientY+b.clientY)/2-rect.top;
   const nx=(mx-ox)/scale,ny=(my-oy)/scale;
   scale=Math.max(1,Math.min(100,pinch.s*d/pinch.d));ox=mx-nx*scale;oy=my-ny*scale;clampView();draw();}},{passive:false});
-cv.addEventListener('touchend',()=>pinch=null);
+cv.addEventListener('touchend',e=>{if(e.touches.length<2){multiTouch=false;pinch=null;}});
+cv.addEventListener('touchcancel',()=>{multiTouch=false;pinch=null;});
 
 
 
