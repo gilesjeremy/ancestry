@@ -1521,11 +1521,11 @@ const LAND=DATA.coast.land, STATES=DATA.coast.states, SITES=DATA.sites, WORLD=DA
 
 const ERAS=[
   {lo:0,hi:1066,label:'Early Medieval',range:'before 1066',c:'#7b4993'},
-  {lo:1066,hi:1300,label:'High Medieval',range:'1066–1300',c:'#49936e'},
-  {lo:1300,hi:1500,label:'Late Medieval',range:'1300–1500',c:'#7b9349'},
-  {lo:1500,hi:1600,label:'Reformation',range:'1500–1600',c:'#938149'},
-  {lo:1600,hi:1776,label:'Colonial & Enlightenment',range:'1600–1776',c:'#936249'},
-  {lo:1776,hi:3000,label:'Modern',range:'1776 on',c:'#934950'},
+  {lo:1066,hi:1300,label:'High Medieval',range:'1066–1300',c:'#496293'},
+  {lo:1300,hi:1500,label:'Late Medieval',range:'1300–1500',c:'#499368'},
+  {lo:1500,hi:1600,label:'Reformation',range:'1500–1600',c:'#998e4c'},
+  {lo:1600,hi:1776,label:'Colonial & Enlightenment',range:'1600–1776',c:'#9e724b'},
+  {lo:1776,hi:3000,label:'Modern',range:'1776 on',c:'#702f37'},
 ];
 function eraOf(y){y=y==null?1500:y;for(const e of ERAS)if(y>=e.lo&&y<e.hi)return e;return ERAS[ERAS.length-1];}
 const eraOff=new Set();
@@ -1677,6 +1677,19 @@ function showPanel(s){
   draw();
 }
 
+function wrapArc(latA,lonA,latB,lonB){
+  var dl=lonB-lonA;if(dl>180)dl-=360;else if(dl<-180)dl+=360;
+  var bow=Math.min(9,Math.abs(dl)*0.055),sgn=(latA+latB)>=0?1:-1;
+  var steps=48,pts=[];
+  for(var i=0;i<=steps;i++){
+    var t=i/steps,lon=lonA+dl*t;
+    var lat=latA+(latB-latA)*t+sgn*bow*Math.sin(Math.PI*t);
+    if(lon>180)lon-=360;else if(lon<-180)lon+=360;
+    pts.push([lat,lon]);
+  }
+  return pts;
+}
+function splitArc(pts){var segs=[],cur=[pts[0]];for(var k=1;k<pts.length;k++){var a=pts[k-1],b=pts[k],d=b[1]-a[1];if(Math.abs(d)>180){var dir=d>0?-1:1,bAdj=b[1]+(d>0?-360:360),t=(dir*180-a[1])/(bAdj-a[1]),latX=a[0]+t*(b[0]-a[0]);cur.push([latX,dir*180]);segs.push(cur);cur=[[latX,-dir*180],b];}else cur.push(b);}segs.push(cur);return segs;}
 function drawBattles(){
   if(selBattle&&battleTime(selBattle)&&battleEra(selBattle)){
     const pp=bppl(selBattle);
@@ -1684,10 +1697,14 @@ function drawBattles(){
     for(const p of pp){
       const bp=BIRTH[p.n];if(!bp)continue;
       if(Math.abs(bp[0]-selBattle.lat)<0.02&&Math.abs(bp[1]-selBattle.lon)<0.02)continue;
-      const pts=gcArc(bp[0],bp[1],selBattle.lat,selBattle.lon);
-      ctx.beginPath();
-      for(let k=0;k<pts.length;k++){const uv=proj(pts[k][1],pts[k][0]),X=sx(uv[0]),Y=sy(uv[1]);k?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}
-      ctx.stroke();
+      const wrap=Math.abs(selBattle.lon-bp[1])>180;
+      const pts=wrap?wrapArc(bp[0],bp[1],selBattle.lat,selBattle.lon):gcArc(bp[0],bp[1],selBattle.lat,selBattle.lon);
+      for(const sgm of splitArc(pts)){
+        if(sgm.length<2)continue;
+        ctx.beginPath();
+        for(let k=0;k<sgm.length;k++){const uv=proj(sgm[k][1],sgm[k][0]),X=sx(uv[0]),Y=sy(uv[1]);k?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}
+        ctx.stroke();
+      }
     }
   }
   const items=BATTLES.map(b=>[b,bppl(b)]).filter(x=>x[1].length>0&&battleTime(x[0])&&battleEra(x[0])).sort((a,c)=>c[1].length-a[1].length);
