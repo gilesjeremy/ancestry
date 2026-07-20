@@ -1848,8 +1848,12 @@ function updateSub(){
 }
 function wireTree(id,tree){
   const b=document.getElementById(id);
-  b.onclick=()=>{ if(treeOff.has(tree)){treeOff.delete(tree);b.classList.add('on');b.setAttribute('aria-pressed','true');}
-    else{treeOff.add(tree);b.classList.remove('on');b.setAttribute('aria-pressed','false');}
+  b.onclick=()=>{
+    const others=['endicott','giles'].filter(t=>t!==tree);
+    const soloed=treeOff.size===others.length&&others.every(t=>treeOff.has(t));
+    treeOff.clear();
+    if(!soloed)others.forEach(t=>treeOff.add(t));
+    [['t-endicott','endicott'],['t-giles','giles']].forEach(bt=>{const el=document.getElementById(bt[0]);el.classList.toggle('on',!treeOff.has(bt[1]));el.setAttribute('aria-pressed',String(!treeOff.has(bt[1])));});
     if(battlesOnly){ if(selBattle&&!bppl(selBattle).length){selBattle=null;panel.style.display='none';} }
     else { if(sel&&!visible(sel)){sel=null;panel.style.display='none';} updateSub(); }
     draw(); };
