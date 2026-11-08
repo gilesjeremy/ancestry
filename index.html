@@ -547,7 +547,7 @@ function draw(){
       if(onTrace){ctx.strokeStyle='#c0392f';ctx.globalAlpha=1;ctx.lineWidth=Math.max(2.4,2.4/Math.sqrt(scale));}
       else if(sharedEdge){ctx.strokeStyle='#2f9c95';ctx.globalAlpha=1;ctx.lineWidth=Math.max(2.2,2.2/Math.sqrt(scale));}
       else if(touchesSel){ctx.strokeStyle='#8a7d68';ctx.globalAlpha=1;ctx.lineWidth=Math.max(2.2,2.2/Math.sqrt(scale));}
-      else{ctx.strokeStyle='#8a7d68';ctx.globalAlpha=(dim||showShared||showNotable||activeCat)?0.14:0.5;ctx.lineWidth=Math.max(1.4,1.4/Math.sqrt(scale));}
+      else{ctx.strokeStyle='#8a7d68';ctx.globalAlpha=(dim||showShared||showNotable||activeCat)?0.14:0.8;ctx.lineWidth=Math.max(1.4,1.4/Math.sqrt(scale));}
       ctx.stroke();
     }
   }
@@ -741,7 +741,7 @@ const sumEl=document.getElementById('summaryPanel');
 const SUMMARY_BODY=CFG.summary||'';
 function showSummary(){var pn=document.getElementById('panel');if(pn)pn.style.display='none';sumEl.innerHTML='<button class="x" aria-label="Close">×</button><div class="hd"><div class="nm">'+esc(P[ROOT][0])+'</div></div><div class="bd">'+SUMMARY_BODY+'</div>';sumEl.style.display='block';sumEl.querySelector('.x').onclick=function(){sumEl.style.display='none';};}
 document.getElementById('fit').onclick=function(){showSummary();};document.getElementById('treeBtn').onclick=function(){var _se=document.getElementById('summaryPanel');if(_se)_se.style.display='none';fitAll();};
-resize(); goTo(ROOT, 0.75); showSummary();
+resize(); goTo(ROOT, 0.60); showSummary();
 @@CLOSESCRIPT@@
 </body>
 </html>
@@ -1166,8 +1166,8 @@ wireTree('t-endicott','endicott'); wireTree('t-giles','giles');
 function setMode(m){mapMode=m;battlesOnly=(m==='battles');sel=null;selBattle=null;panel.style.display='none';tip.style.display='none';var ids={births:'m-births',battles:'m-battles',migration:'m-migration'};for(var k in ids){var el=document.getElementById(ids[k]);if(el){el.classList.toggle('on',m===k);el.setAttribute('aria-pressed',String(m===k));}}if(m==='battles')document.getElementById('mapsub').textContent='\u25C6 = battle / campaign site \u00b7 click to see who fought there';else if(m==='migration')document.getElementById('mapsub').textContent='lines trace parent\u2192child birthplaces \u00b7 click a place to highlight its lineage';else updateSub();draw();}document.getElementById('m-births').onclick=function(){setMode('births');};document.getElementById('m-battles').onclick=function(){setMode('battles');};document.getElementById('m-migration').onclick=function(){setMode('migration');};
 updateSub();
 
-resize();frameBox(-91,2,48,67);
-(function(){if(typeof ResizeObserver==='undefined')return;if(vw>0&&vh>0)return;var done=false;var ro=new ResizeObserver(function(){if(!done&&cv.clientWidth>0&&cv.clientHeight>0){done=true;resize();frameBox(-91,2,48,67);ro.disconnect();}});ro.observe(cv);})();
+resize();frameBox(-80,36,36,60);
+(function(){if(typeof ResizeObserver==='undefined')return;if(vw>0&&vh>0)return;var done=false;var ro=new ResizeObserver(function(){if(!done&&cv.clientWidth>0&&cv.clientHeight>0){done=true;resize();frameBox(-80,36,36,60);ro.disconnect();}});ro.observe(cv);})();
 @@CLOSESCRIPT@@
 </body>
 </html>
