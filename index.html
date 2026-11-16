@@ -786,16 +786,20 @@ canvas.drag{cursor:grabbing}
 #track .thm{position:absolute;top:1px;width:14px;height:14px;margin-left:-7px;border-radius:50%;background:#1a2029;border:2px solid var(--gold);box-sizing:border-box;cursor:ew-resize;touch-action:none}
 #track .thm:hover,#track .thm.drag{background:var(--gold)}
 #track .thm:focus{outline:none;box-shadow:0 0 0 3px rgba(197,160,80,.35)}
-#timewrap .foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+#timewrap .foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px;position:relative}
 .wtog{display:inline-flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:#6f6856;padding:0}
 .wtog:hover{color:#c2b89c}
 .wtog .wdot{width:11px;height:11px;border-radius:50%;border:1px solid #6f6856;box-sizing:border-box;flex:none}
 .wtog.on{color:var(--gold)}
+.fleft{display:inline-flex;align-items:center;gap:10px}
+#playtog{font-size:12px;line-height:1;padding:0;letter-spacing:0}
+#playtog:hover{color:#c2b89c}
+#playtog.on{color:var(--gold)}
 .wtog.on .wdot{border-color:var(--gold);background:radial-gradient(circle,var(--gold) 0 45%,transparent 48%)}
-#timewrap .hint{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:#6f6856;margin:0;text-align:right}
+#timewrap .hint{font-family:ui-monospace,Menlo,monospace;font-size:9.5px;color:#6f6856;margin:0;position:absolute;left:0;right:0;text-align:center;pointer-events:none}
 
 #ctrls{position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:6px}
-#ctrls button{background:var(--rail);border:1px solid var(--hair);color:#d8d2c4;border-radius:3px;font:11px ui-monospace,Menlo,monospace;padding:7px 10px;cursor:pointer;box-sizing:border-box;width:84px}
+#ctrls button{background:var(--rail);border:1px solid var(--hair);color:#d8d2c4;border-radius:3px;font:11px ui-monospace,Menlo,monospace;padding:7px 6px;cursor:pointer;box-sizing:border-box;width:84px}
 #ctrls button:hover{border-color:var(--gold);color:var(--gold)}
 #ctrls button.treebtn{font-size:11px;letter-spacing:.03em}
 #ctrls button.treebtn:not(.on){color:#6f6a5e;border-style:dashed}
@@ -864,6 +868,7 @@ canvas.drag{cursor:grabbing}
     <div class="foot">
       <button id="wintog" class="wtog" aria-pressed="false"><span class="wdot"></span>Window</button>
       <span class="hint" id="hinttxt">drag ends to set a range</span>
+      <button id="playtog" class="wtog playbtn" aria-label="Play auto-sweep" title="Auto-sweep the window across time">▶</button>
     </div>
   </div>
   <div id="ctrls">
@@ -873,7 +878,7 @@ canvas.drag{cursor:grabbing}
     <button id="m-migration" class="treebtn" aria-pressed="false" title="Trace parent&#8594;child birthplaces">Migration</button>
     <button id="m-battles" class="treebtn" aria-pressed="false" title="Show battle &amp; campaign sites">Battles</button>
     <div class="cdiv"></div>
-    <button id="t-cycle" class="treebtn on" title="Cycle families: Both / Endicott / Giles">Both</button>
+    <button id="t-cycle" class="treebtn on" title="Cycle families: Both Sides / Endicott / Giles">Both Sides</button>
   </div>
   <div id="panel"></div>
   <div id="summaryPanel" role="dialog" aria-label="Origins summary"></div>
@@ -1181,6 +1186,7 @@ function px2yr(clientX){const r=track.getBoundingClientRect();
   let f=(clientX-r.left)/r.width;f=Math.max(0,Math.min(1,f));
   return YMIN+f*(YMAX-YMIN);}
 function startDrag(which,ev){
+  if(typeof stopPlay==='function')stopPlay();
   ev.preventDefault();ev.stopPropagation();
   const el=which==='band'?band:(which==='lo'?h0:h1);el.classList.add('drag');
   const r=track.getBoundingClientRect();
@@ -1205,6 +1211,7 @@ h0.addEventListener('pointerdown',e=>startDrag('lo',e));
 h1.addEventListener('pointerdown',e=>startDrag('hi',e));
 band.addEventListener('pointerdown',e=>startDrag('band',e));
 track.addEventListener('pointerdown',e=>{
+  if(typeof stopPlay==='function')stopPlay();
   if(e.target===h0||e.target===h1||e.target===band)return;
   const y=px2yr(e.clientX);
   if(winMode){const lo=Math.max(YMIN,Math.min(YMAX-WSPAN,y-WSPAN/2));setRange(lo,lo+WSPAN);}
@@ -1223,14 +1230,45 @@ function keyAdj(which,e){
 h0.addEventListener('keydown',e=>keyAdj('lo',e));
 h1.addEventListener('keydown',e=>keyAdj('hi',e));
 winTog.addEventListener('click',()=>{
+  if(typeof stopPlay==='function')stopPlay();
   winMode=!winMode;winTog.classList.toggle('on',winMode);winTog.setAttribute('aria-pressed',String(winMode));
   if(winMode){
-    let c=(yearLo+yearHi)/2;if(yearLo<=YMIN&&yearHi>=YMAX)c=1700;
-    const lo=Math.max(YMIN,Math.min(YMAX-WSPAN,Math.round(c-WSPAN/2)));
-    hintTxt.textContent='drag to sweep a 50-yr window';setRange(lo,lo+WSPAN);
-  } else {hintTxt.textContent='drag ends to set a range';layoutSlider();}
+    const lo=Math.max(YMIN,Math.min(YMAX-WSPAN,yearLo));
+    hintTxt.textContent='drag to sweep a 50-yr window';updateHintVis();setRange(lo,lo+WSPAN);
+  } else {hintTxt.textContent='drag ends to set a range';updateHintVis();layoutSlider();}
 });
 layoutSlider();
+const playTog=document.getElementById('playtog');
+let playing=false,playRAF=null,playLast=0,playT0=0,playFromLo=0,playDur=0;
+function stopPlay(){playing=false;if(playRAF)cancelAnimationFrame(playRAF);playRAF=null;if(playTog){playTog.classList.remove('on');playTog.textContent='▶';playTog.setAttribute('aria-label','Play auto-sweep');}}
+function startPlay(){
+  if(!winMode){winMode=true;winTog.classList.add('on');winTog.setAttribute('aria-pressed','true');hintTxt.textContent='drag to sweep a 50-yr window';updateHintVis();}
+  var lo=yearLo; if(lo>=YMAX-WSPAN-1)lo=YMIN; setRange(lo,lo+WSPAN);
+  playing=true;playTog.classList.add('on');playTog.textContent='⏸';playTog.setAttribute('aria-label','Pause auto-sweep');
+  var endLo=YMAX-WSPAN; playFromLo=yearLo; var frac=(endLo-playFromLo)/(endLo-YMIN); playDur=18000*Math.max(0.05,frac); playT0=performance.now(); playLast=0;
+  function frame(now){
+    if(!playing)return;
+    var t=Math.min(1,(now-playT0)/Math.max(1,playDur));
+    if(now-playLast>=33||t>=1){playLast=now;var lo=Math.round(playFromLo+t*(endLo-playFromLo));setRange(lo,lo+WSPAN);}
+    if(t>=1){stopPlay();return;}
+    playRAF=requestAnimationFrame(frame);
+  }
+  playRAF=requestAnimationFrame(frame);
+}
+playTog.addEventListener('click',function(){ if(playing)stopPlay(); else startPlay(); });
+function updateHintVis(){
+  if(!hintTxt)return; var foot=hintTxt.parentElement; if(!foot)return;
+  var fw=foot.clientWidth; var cs=getComputedStyle(hintTxt);
+  var p=document.createElement('span');
+  p.style.cssText='position:absolute;visibility:hidden;white-space:nowrap';
+  p.style.fontFamily=cs.fontFamily;p.style.fontSize=cs.fontSize;p.style.fontWeight=cs.fontWeight;p.style.letterSpacing=cs.letterSpacing;
+  p.textContent=hintTxt.textContent; document.body.appendChild(p);
+  var W=p.getBoundingClientRect().width; p.remove();
+  var need=W+2*Math.max(winTog.offsetWidth,playTog.offsetWidth)+12;
+  hintTxt.style.visibility = (fw>=need) ? 'visible' : 'hidden';
+}
+window.addEventListener('resize',updateHintVis);
+updateHintVis();
 
 const eraBox=document.getElementById('era');
 const eraRows=[];
@@ -1266,7 +1304,7 @@ function applyTreeCycle(){
   if(treeCycle===1)treeOff.add('giles');
   else if(treeCycle===2)treeOff.add('endicott');
   var b=document.getElementById('t-cycle');
-  if(b)b.textContent=['Both','Endicott','Giles'][treeCycle];
+  if(b)b.textContent=['Both Sides','Endicott','Giles'][treeCycle];
   if(battlesOnly){ if(selBattle&&!bppl(selBattle).length){selBattle=null;panel.style.display='none';} }
   else { if(sel&&!visible(sel)){sel=null;panel.style.display='none';} updateSub(); }
   draw();
@@ -1277,7 +1315,7 @@ updateSub();
 
 resize();frameBox(-80,36,36,60);
 (function(){if(typeof ResizeObserver==='undefined')return;if(vw>0&&vh>0)return;var done=false;var ro=new ResizeObserver(function(){if(!done&&cv.clientWidth>0&&cv.clientHeight>0){done=true;resize();frameBox(-80,36,36,60);ro.disconnect();}});ro.observe(cv);})();
-const sumEl=document.getElementById('summaryPanel');const SUMMARIES=[{"name": "Alex & Jeremy", "tab": "Alex & Jeremy", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">43.75%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:43.75%;background:#4a7a52\"></span></div><div class=\"onote\">Both parents — Melissa’s paternal ancestors immigrated to Canada in early/mid 1800s and Tom’s ancestors (both sides) immigrated to Mass. in mid/late 1800s.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">37.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:37.5%;background:#9c7b3f\"></span></div><div class=\"onote\">Both parents’ colonial New England stock — Anglo-Saxon under a Norman overlay, running back to medieval kings, princes, and emperors (see “pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Québécois / French</span><span class=\"opct\">12.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:12.5%;background:#45658f\"></span></div><div class=\"onote\">Melissa’s paternal side — French by origin, recorded no further back than Québec.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Scots</span><span class=\"opct\">6.25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:6.25%;background:#7a5a86\"></span></div><div class=\"onote\">Tom’s paternal side, emigrated mid-1800s</div></div>"}, {"name": "Melissa Endicott Roy", "tab": "Melissa", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">50%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:50%;background:#9c7b3f\"></span></div><div class=\"onote\">Maternal colonial New England line — 17th-century Puritan stock, an Anglo-Saxon base under a post-1066 Norman overlay that runs back to medieval kings, Kievan princes, and Byzantine emperors. But that royal pedigree is more decorative than genetic: models show nearly everyone of European descent descends from Charlemagne (see “pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Québécois / French</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#45658f\"></span></div><div class=\"onote\">The paternal Roy line — French by origin, but recorded no further back than Québec.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#4a7a52\"></span></div><div class=\"onote\">The paternal Mullins and Boyle lines, pre-1839 immigrants — a full quarter</div></div>"}, {"name": "Thomas Lamson Giles", "tab": "Tom", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">62.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:62.5%;background:#4a7a52\"></span></div><div class=\"onote\">His entire maternal half — recent immigrant stock (Cork and Fermanagh, later 1800s) — plus a further Sligo eighth on his father’s side.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#9c7b3f\"></span></div><div class=\"onote\">Paternal colonial New England line — 17th-century Puritan stock, an Anglo-Saxon base under a post-1066 Norman overlay that runs back to medieval kings, Kievan princes, and Byzantine emperors. But that royal pedigree is more decorative than genetic: models show nearly everyone of European descent descends from Charlemagne (see “pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Scots</span><span class=\"opct\">12.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:12.5%;background:#7a5a86\"></span></div><div class=\"onote\">The Campbells, by way of Prince Edward Island.</div></div>"}];let sumIdx=0;function setSumBtn(on){var tg=document.getElementById('sumToggle');if(tg){tg.classList.toggle('on',on);tg.setAttribute('aria-pressed',on?'true':'false');}}function renderSummary(){var s=SUMMARIES[sumIdx];var tabs=SUMMARIES.map(function(e,i){return '<button class="sumtab'+(i===sumIdx?' on':'')+'" type="button" data-i="'+i+'">'+esc(e.tab)+'</button>';}).join('');sumEl.innerHTML='<button class="x" aria-label="Close">×</button><div class="hd"><div class="sumtabs" role="tablist">'+tabs+'</div></div><div class="bd">'+s.html+'</div>';sumEl.querySelector('.x').onclick=function(){sumEl.style.display='none';setSumBtn(false);};Array.prototype.forEach.call(sumEl.querySelectorAll('.sumtab'),function(b){b.onclick=function(){sumIdx=+b.getAttribute('data-i');renderSummary();};});}function showSummary(){var pn=document.getElementById('panel');if(pn)pn.style.display='none';renderSummary();sumEl.style.display='block';setSumBtn(true);}(function(){var tg=document.getElementById('sumToggle');if(tg)tg.onclick=function(){if(sumEl.style.display==='block'){sumEl.style.display='none';setSumBtn(false);}else{showSummary();}};})();showSummary();
+const sumEl=document.getElementById('summaryPanel');const SUMMARIES=[{"name": "Alex & Jeremy", "tab": "Alex & Jeremy", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">43.75%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:43.75%;background:#4a7a52\"></span></div><div class=\"onote\">Both parents — Irish émigrés in the 1800s who first settled in Massachusetts and Quebec.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">37.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:37.5%;background:#9c7b3f\"></span></div><div class=\"onote\">Both parents’ — colonial New England stock, with Anglo-Saxon and Norman origins running back to medieval kings (“pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Québécois / French</span><span class=\"opct\">12.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:12.5%;background:#45658f\"></span></div><div class=\"onote\">Melissa’s paternal side — French by origin, recorded no further back than Québec.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Scots</span><span class=\"opct\">6.25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:6.25%;background:#7a5a86\"></span></div><div class=\"onote\">Tom’s paternal side — emigrated mid-1800s.</div></div>"}, {"name": "Melissa Endicott Roy", "tab": "Melissa", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">50%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:50%;background:#9c7b3f\"></span></div><div class=\"onote\">Maternal colonial New England line — 17th-century Puritan stock, an Anglo-Saxon base under a post-1066 Norman overlay that runs back to medieval kings, Kievan princes, and Byzantine emperors. But that royal pedigree is more decorative than genetic: models show nearly everyone of European descent descends from Charlemagne (see “pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Québécois / French</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#45658f\"></span></div><div class=\"onote\">The paternal Roy line — French by origin, but recorded no further back than Québec.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#4a7a52\"></span></div><div class=\"onote\">The paternal Mullins and Boyle lines, pre-1839 immigrants — a full quarter</div></div>"}, {"name": "Thomas Lamson Giles", "tab": "Tom", "html": "<div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Irish</span><span class=\"opct\">62.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:62.5%;background:#4a7a52\"></span></div><div class=\"onote\">His entire maternal half — recent immigrant stock (Cork and Fermanagh, later 1800s) — plus a further Sligo eighth on his father’s side.</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">English</span><span class=\"opct\">25%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:25%;background:#9c7b3f\"></span></div><div class=\"onote\">Paternal colonial New England line — 17th-century Puritan stock, an Anglo-Saxon base under a post-1066 Norman overlay that runs back to medieval kings, Kievan princes, and Byzantine emperors. But that royal pedigree is more decorative than genetic: models show nearly everyone of European descent descends from Charlemagne (see “pedigree collapse”).</div></div><div class=\"obar\"><div class=\"olab\"><span class=\"oname\">Scots</span><span class=\"opct\">12.5%</span></div><div class=\"otrack\"><span class=\"ofill\" style=\"width:12.5%;background:#7a5a86\"></span></div><div class=\"onote\">The Campbells, by way of Prince Edward Island.</div></div>"}];let sumIdx=0;function setSumBtn(on){var tg=document.getElementById('sumToggle');if(tg){tg.classList.toggle('on',on);tg.setAttribute('aria-pressed',on?'true':'false');}}function renderSummary(){var s=SUMMARIES[sumIdx];var tabs=SUMMARIES.map(function(e,i){return '<button class="sumtab'+(i===sumIdx?' on':'')+'" type="button" data-i="'+i+'">'+esc(e.tab)+'</button>';}).join('');sumEl.innerHTML='<button class="x" aria-label="Close">×</button><div class="hd"><div class="sumtabs" role="tablist">'+tabs+'</div></div><div class="bd">'+s.html+'</div>';sumEl.querySelector('.x').onclick=function(){sumEl.style.display='none';setSumBtn(false);};Array.prototype.forEach.call(sumEl.querySelectorAll('.sumtab'),function(b){b.onclick=function(){sumIdx=+b.getAttribute('data-i');renderSummary();};});}function showSummary(){var pn=document.getElementById('panel');if(pn)pn.style.display='none';renderSummary();sumEl.style.display='block';setSumBtn(true);}(function(){var tg=document.getElementById('sumToggle');if(tg)tg.onclick=function(){if(sumEl.style.display==='block'){sumEl.style.display='none';setSumBtn(false);}else{showSummary();}};})();showSummary();
 @@CLOSESCRIPT@@
 </body>
 </html>
